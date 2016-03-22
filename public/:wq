@@ -1,0 +1,94 @@
+
+angular.module('comment', [])
+.controller('MainCtrl', [
+  '$scope','$http',
+function($scope,$http){
+    $scope.test = 'Hello world!';
+    $scope.comments = [
+      {title:'Comment 1', upvotes:5},
+      {title:'Comment 2', upvotes:6},
+      {title:'Comment 3', upvotes:1},
+      {title:'Comment 4', upvotes:4},
+      {title:'Comment 5', upvotes:3}
+    ];
+    $scope.create = function(comment) {
+      return $http.post('/comments', comment).success(function(data){
+        $scope.comments.push(data);
+      });
+    };
+
+    $scope.addComment = function() {
+	$scope.create({title:$scope.formContent,upvotes:0});
+
+       // $scope.comments.push({title:$scope.formContent,upvotes:0});
+	$scope.formContent='';    
+    };
+
+    $scope.upvote = function(comment) {
+      return $http.put('/comments/' + comment._id + '/upvote')
+        .success(function(data){
+          console.log("upvote worked");
+          comment.upvotes = data.upvotes;
+        });
+    };
+
+    $scope.incrementUpvotes = function(comment) {
+        $scope.upvote(comment);
+    };    
+
+    $scope.getAll = function() {
+      return $http.get('/comments').success(function(data){
+        angular.copy(data, $scope.comments);
+      });
+    };
+    $scope.getAll();
+
+    // Define a new module for our app. The array holds the names of dependencies if any.
+var app = angular.module("instantSearch", []);
+
+// Create the instant search filter
+
+app.filter('searchFor', function(){
+
+	// All filters must return a function. The first parameter
+	// is the data that is to be filtered, and the second is an
+	// argument that may be passed with a colon (searchFor:searchString)
+
+	return function(arr, searchString){
+
+		if(!searchString){
+			return arr;
+		}
+
+		var result = [];
+
+		searchString = searchString.toLowerCase();
+
+		// Using the forEach helper method to loop through the array
+		angular.forEach(arr, function(item){
+
+			if(item.title.toLowerCase().indexOf(searchString) !== -1){
+				result.push(item);
+			}
+
+		});
+
+		return result;
+	};
+
+});
+
+// The controller
+
+function InstantSearchController($scope){
+
+	// The data model. These items would normally be requested via AJAX,
+	// but are hardcoded here for simplicity. See the next example for
+	// tips on using AJAX.
+
+	$scope.items = $scope.comments;
+
+}
+
+  }
+]);
